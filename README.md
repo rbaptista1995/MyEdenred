@@ -1,10 +1,3 @@
-![GitHub](https://img.shields.io/github/license/netsoft-ruidias/ha-custom-component-myedenred?style=for-the-badge)
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
-
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/netsoft-ruidias/ha-custom-component-myedenred?style=for-the-badge)
-![GitHub Release Date](https://img.shields.io/github/release-date/netsoft-ruidias/ha-custom-component-myedenred?style=for-the-badge)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/netsoft-ruidias/ha-custom-component-myedenred?style=for-the-badge)
-
 # myEdenred Card Integration
 myEdenred - Custom Component for Home Assistant
 
@@ -24,7 +17,8 @@ You're ready! Now continue with the configuration.
 1. Navigate to `Settings > Devices & Services` and then click `Add Integration`
 2. Search for `myEdenred`
 4. Enter your credentials
-5. Repeat the procedure as many times as desired to include other cards you may have
+5. Enter 2FA Code received in mail
+6. Repeat the procedure as many times as desired to include other cards you may have
 
 # Card
 
@@ -158,9 +152,3 @@ tap_action:
 This is a personal project and isn't in any way affiliated with, sponsored or endorsed by [MyEdenred Portugal](https://www.myedenred.pt/).
 
 All product names, trademarks and registered trademarks in (the images in) this repository, are property of their respective owners. All images in this repository are used by the project for identification purposes only.
-
----
-Please, support my other integrations: 
-[Preços dos Combustivels](https://github.com/netsoft-ruidias/ha-custom-component-precoscombustiveis) | 
-[Sodexo](https://github.com/netsoft-ruidias/ha-custom-component-sodexo) |
-[Coverflex](https://github.com/netsoft-ruidias/ha-custom-component-coverflex)
