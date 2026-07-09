@@ -1,0 +1,46 @@
+{
+    "title": "MyEdenred Cartao Refeicao",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Credenciais de Acesso",
+                "description": "Por favor, introduza o seu nome de utilizador e palavra passe que usa para ter acesso ao portal https://www.myedenred.pt/.",
+                "data": {
+                    "username": "Email",
+                    "password": "Palavra Passe",
+                    "includeTransactions": "Incluir a lista de transacoes?"
+                },
+                "data_description": {
+                    "username": "O Email usado para aceder ao portal https://www.myedenred.pt/",
+                    "password": "A Palavra Passe usada para aceder ao portal https://www.myedenred.pt/",
+                    "includeTransactions": "Incluir a lista de transacoes"
+                }
+            },
+            "challenge": {
+                "title": "Codigo de verificacao por email",
+                "description": "Introduza o codigo enviado pelo MyEdenred para o seu email.",
+                "data": {
+                    "code": "Codigo"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Renovar autenticacao MyEdenred",
+                "description": "Introduza novamente as suas credenciais MyEdenred. A seguir podera ser pedido o codigo de verificacao por email.",
+                "data": {
+                    "username": "Email",
+                    "password": "Palavra Passe",
+                    "includeTransactions": "Incluir a lista de transacoes?"
+                }
+            }
+        },
+        "error": {
+            "auth": "Credenciais invalidas para https://www.myedenred.pt/.",
+            "invalid_code": "Codigo de verificacao invalido ou expirado."
+        },
+        "abort": {
+            "single_instance_allowed": "So e permitida uma unica integracao do myEdenred.",
+            "already_configured": "Esta integracao ja existe",
+            "reauth_successful": "A autenticacao MyEdenred foi renovada com sucesso."
+        }
+    }
+}
