@@ -50,6 +50,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if isinstance(result, dict) and result.get("token"):
                 _LOGGER.debug("Config is valid!")
                 user_input["token"] = result["token"]
+                user_input["cookies"] = result.get("cookies", {})
                 return self.async_create_entry(
                     title="MyEdenred " + user_input["username"], 
                     data = user_input
@@ -73,7 +74,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             session = async_get_clientsession(self.hass, True)
             async with async_timeout.timeout(10):
-                api = MY_EDENRED(session)
+                api = MY_EDENRED(session, self._pending_challenge.get("cookies"))
                 try:
                     result = await api.login_with_challenge(
                         self._pending_user_input["username"],
@@ -83,6 +84,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                     data = dict(self._pending_user_input)
                     data["token"] = result["token"]
+                    data["cookies"] = result.get("cookies", {})
                     if self._reauth_entry:
                         self.hass.config_entries.async_update_entry(
                             self._reauth_entry,
@@ -126,6 +128,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             result = await self._authenticate(data)
             if isinstance(result, dict) and result.get("token"):
                 data["token"] = result["token"]
+                data["cookies"] = result.get("cookies", {})
                 self.hass.config_entries.async_update_entry(
                     self._reauth_entry,
                     data=data,

@@ -35,13 +35,39 @@ class MyEdenredChallengeRequired(MyEdenredAuthError):
 class MY_EDENRED:
     """Interfaces to https://myedenred.pt/"""
 
-    def __init__(self, websession):
+    def __init__(self, websession, cookies=None):
         self.websession = websession
         self.json = None
+        self.cookies = cookies or {}
+
+    def _cookie_header(self):
+        """Return stored cookies as a HTTP Cookie header."""
+        if not self.cookies:
+            return None
+        return "; ".join(
+            f"{name}={value}" for name, value in self.cookies.items() if value
+        )
+
+    def _headers(self, token=None):
+        """Return common request headers."""
+        headers = {"Content-Type": "application/json"}
+        if token:
+            headers["Authorization"] = token
+        cookie_header = self._cookie_header()
+        if cookie_header:
+            headers["Cookie"] = cookie_header
+        return headers
 
     async def _request_json(self, method, url, **kwargs):
         """Issue a request and return the JSON body."""
         async with self.websession.request(method, url, **kwargs) as res:
+            if res.cookies:
+                self.cookies.update(
+                    {
+                        name: morsel.value
+                        for name, morsel in res.cookies.items()
+                    }
+                )
             if res.content_type == "application/json":
                 json = await res.json()
                 if res.status == 200:
@@ -60,10 +86,11 @@ class MY_EDENRED:
                 "POST",
                 API_LOGIN_URL,
                 params=API_COMMON_PARAMS,
-                headers={"Content-Type": "application/json"},
+                headers=self._headers(),
                 json={"userId": username, "password": password},
             )
             data = json.get("data", {})
+            data["cookies"] = self.cookies
             if data.get("challengeId"):
                 raise MyEdenredChallengeRequired(data)
             if data.get("token"):
@@ -90,7 +117,7 @@ class MY_EDENRED:
                 "POST",
                 API_LOGIN_CHALLENGE_URL,
                 params=API_COMMON_PARAMS,
-                headers={"Content-Type": "application/json"},
+                headers=self._headers(),
                 json={
                     "userId": username,
                     "password": password,
@@ -99,6 +126,7 @@ class MY_EDENRED:
                 },
             )
             data = json.get("data", {})
+            data["cookies"] = self.cookies
             if data.get("token"):
                 return data
             raise MyEdenredAuthError("Could not retrieve token after 2FA challenge")
@@ -114,10 +142,7 @@ class MY_EDENRED:
                 "GET",
                 API_LIST_URL,
                 params=API_COMMON_PARAMS,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": token,
-                },
+                headers=self._headers(token),
             )
             _LOGGER.debug("Done getting list of available cards.")
             return [Card(card) for card in json["data"]]
@@ -133,10 +158,7 @@ class MY_EDENRED:
                 "GET",
                 API_ACCOUNTMOVEMENT_URL.format(cardId),
                 params=API_COMMON_PARAMS,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": token,
-                },
+                headers=self._headers(token),
             )
             _LOGGER.debug("Done getting card details and their movements.")
             return Account(json["data"]["account"], json["data"]["movementList"])

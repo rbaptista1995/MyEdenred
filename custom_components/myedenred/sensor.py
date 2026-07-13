@@ -42,13 +42,21 @@ async def async_setup_entry(hass: HomeAssistant,
                             async_add_entities: Callable):
     """Setup sensor platform."""
     session = async_get_clientsession(hass, True)
-    api = MY_EDENRED(session)
-
     config = config_entry.data
+    api = MY_EDENRED(session, config.get("cookies"))
     token = config.get("token")
     if not token:
         try:
-            token = await api.login(config["username"], config["password"])
+            result = await api.authenticate(config["username"], config["password"])
+            token = result["token"]
+            hass.config_entries.async_update_entry(
+                config_entry,
+                data={
+                    **config,
+                    "token": token,
+                    "cookies": result.get("cookies", {}),
+                },
+            )
         except MyEdenredChallengeRequired as err:
             raise ConfigEntryAuthFailed("MyEdenred requires email 2FA") from err
         except MyEdenredError as err:
@@ -61,18 +69,18 @@ async def async_setup_entry(hass: HomeAssistant,
             raise ConfigEntryAuthFailed("MyEdenred token expired") from err
         except MyEdenredError as err:
             raise ConfigEntryNotReady("Could not retrieve MyEdenred cards") from err
-        sensors = [MyEdenredSensor(card, api, config) for card in cards]
+        sensors = [MyEdenredSensor(card, api, config_entry) for card in cards]
         async_add_entities(sensors, update_before_add=True)
 
 
 class MyEdenredSensor(SensorEntity):
     """Representation of a MyEdenred Card (Sensor)."""
 
-    def __init__(self, card: Card, api: MY_EDENRED, config: Any):
+    def __init__(self, card: Card, api: MY_EDENRED, config_entry: ConfigEntry):
         super().__init__()
         self._card = card
         self._api = api
-        self._config = config
+        self._config_entry = config_entry
         self._transactions = None
 
         self._icon = DEFAULT_ICON
@@ -137,7 +145,7 @@ class MyEdenredSensor(SensorEntity):
            This is the only method that should fetch new data for Home Assistant.
         """
         api = self._api
-        config = self._config
+        config = self._config_entry.data
         card = self._card
         
         try:            
