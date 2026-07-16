@@ -1,0 +1,46 @@
+{
+    "title": "MyEdenred meal card integration",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Add Credentials",
+                "description": "Please type your credentials",
+                "data": {
+                    "username": "Email",
+                    "password": "Password",
+                    "includeTransactions": "Include the transaction list?"
+                },
+                "data_description": {
+                    "username": "The email used to login in https://www.myedenred.pt/ portal",
+                    "password": "The password used to login in https://www.myedenred.pt/ portal",
+                    "includeTransactions": "Include the transaction list"
+                }
+            },
+            "challenge": {
+                "title": "Email verification code",
+                "description": "Enter the code sent by MyEdenred to your email.",
+                "data": {
+                    "code": "Code"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Renew MyEdenred login",
+                "description": "Enter your MyEdenred credentials again. You may be asked for the email verification code next.",
+                "data": {
+                    "username": "Email",
+                    "password": "Password",
+                    "includeTransactions": "Include the transaction list?"
+                }
+            }
+        },
+        "error": {
+            "auth": "Invalid credentials accessing https://www.myedenred.pt/ portal.",
+            "invalid_code": "Invalid or expired verification code."
+        },
+        "abort": {
+            "single_instance_allowed": "Only a single configuration of myEdenred is allowed.",
+            "already_configured": "Integration is already configured",
+            "reauth_successful": "MyEdenred authentication was renewed successfully."
+        }
+    }
+}
