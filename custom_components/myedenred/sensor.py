@@ -15,12 +15,10 @@ from homeassistant.components.sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api.myedenred import (
     MY_EDENRED,
     MyEdenredAuthError,
-    MyEdenredChallengeRequired,
     MyEdenredError,
 )
 from .api.card import Card
@@ -41,36 +39,15 @@ async def async_setup_entry(hass: HomeAssistant,
                             config_entry: ConfigEntry, 
                             async_add_entities: Callable):
     """Setup sensor platform."""
-    session = async_get_clientsession(hass, True)
-    config = config_entry.data
-    api = MY_EDENRED(session, config.get("cookies"))
-    token = config.get("token")
-    if not token:
-        try:
-            result = await api.authenticate(config["username"], config["password"])
-            token = result["token"]
-            hass.config_entries.async_update_entry(
-                config_entry,
-                data={
-                    **config,
-                    "token": token,
-                    "cookies": result.get("cookies", {}),
-                },
-            )
-        except MyEdenredChallengeRequired as err:
-            raise ConfigEntryAuthFailed("MyEdenred requires email 2FA") from err
-        except MyEdenredError as err:
-            raise ConfigEntryNotReady("Could not authenticate with MyEdenred") from err
+    runtime_data = hass.data[DOMAIN].get(config_entry.entry_id)
+    if not runtime_data:
+        raise ConfigEntryNotReady("MyEdenred runtime data is not available")
 
-    if (token):
-        try:
-            cards = await api.getCards(token)
-        except MyEdenredAuthError as err:
-            raise ConfigEntryAuthFailed("MyEdenred token expired") from err
-        except MyEdenredError as err:
-            raise ConfigEntryNotReady("Could not retrieve MyEdenred cards") from err
-        sensors = [MyEdenredSensor(card, api, config_entry) for card in cards]
-        async_add_entities(sensors, update_before_add=True)
+    sensors = [
+        MyEdenredSensor(card, runtime_data["api"], config_entry)
+        for card in runtime_data["cards"]
+    ]
+    async_add_entities(sensors, update_before_add=False)
 
 
 class MyEdenredSensor(SensorEntity):
@@ -152,6 +129,14 @@ class MyEdenredSensor(SensorEntity):
             token = config.get("token")
             if (token):
                 account = await api.getAccountDetails(card.id, token)
+                if api.cookies != config.get("cookies"):
+                    self.hass.config_entries.async_update_entry(
+                        self._config_entry,
+                        data={
+                            **config,
+                            "cookies": api.cookies,
+                        },
+                    )
                 self._state = account.availableBalance
                 if config["includeTransactions"]:
                     list = []
