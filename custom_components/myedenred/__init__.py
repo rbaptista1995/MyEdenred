@@ -16,7 +16,7 @@ from .api.myedenred import (
 )
 from .const import DOMAIN
 
-__version__ = "2.2.0"
+__version__ = "2.2.1"
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 
@@ -60,6 +60,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     except MyEdenredError as err:
         raise ConfigEntryNotReady("Could not retrieve MyEdenred cards") from err
 
+    accounts = {}
+    for card in cards:
+        try:
+            accounts[card.id] = await api.getAccountDetails(card.id, token)
+        except MyEdenredAuthError as err:
+            raise ConfigEntryAuthFailed("MyEdenred token expired") from err
+        except MyEdenredError as err:
+            raise ConfigEntryNotReady(
+                f"Could not retrieve MyEdenred account data for card {card.id}"
+            ) from err
+
     hass.config_entries.async_update_entry(
         entry,
         data={
@@ -68,7 +79,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             "cookies": api.cookies,
         },
     )
-    hass.data[DOMAIN][entry.entry_id] = {"api": api, "cards": cards}
+    hass.data[DOMAIN][entry.entry_id] = {
+        "api": api,
+        "cards": cards,
+        "accounts": accounts,
+    }
     
     # Update compatibility with Home Assistant 2022.12
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

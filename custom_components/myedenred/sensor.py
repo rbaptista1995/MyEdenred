@@ -44,7 +44,12 @@ async def async_setup_entry(hass: HomeAssistant,
         raise ConfigEntryNotReady("MyEdenred runtime data is not available")
 
     sensors = [
-        MyEdenredSensor(card, runtime_data["api"], config_entry)
+        MyEdenredSensor(
+            card,
+            runtime_data["api"],
+            config_entry,
+            runtime_data["accounts"].get(card.id),
+        )
         for card in runtime_data["cards"]
     ]
     async_add_entities(sensors, update_before_add=False)
@@ -53,7 +58,13 @@ async def async_setup_entry(hass: HomeAssistant,
 class MyEdenredSensor(SensorEntity):
     """Representation of a MyEdenred Card (Sensor)."""
 
-    def __init__(self, card: Card, api: MY_EDENRED, config_entry: ConfigEntry):
+    def __init__(
+        self,
+        card: Card,
+        api: MY_EDENRED,
+        config_entry: ConfigEntry,
+        account: Any,
+    ):
         super().__init__()
         self._card = card
         self._api = api
@@ -66,6 +77,8 @@ class MyEdenredSensor(SensorEntity):
         self._state_class = SensorStateClass.TOTAL
         self._state = None
         self._available = True
+        if account:
+            self._apply_account(account)
         
     @property
     def name(self) -> str:
@@ -117,6 +130,19 @@ class MyEdenredSensor(SensorEntity):
             "transactions": self._transactions
         }
 
+    def _apply_account(self, account) -> None:
+        """Apply account data to the entity state."""
+        self._state = account.availableBalance
+        if self._config_entry.data["includeTransactions"]:
+            transactions = []
+            for transaction in account.movementList:
+                transactions.append({
+                    "date": transaction.date,
+                    "name": transaction.name,
+                    "amount": transaction.amount,
+                })
+            self._transactions = transactions
+
     async def async_update(self) -> None:
         """Fetch new state data for the sensor.
            This is the only method that should fetch new data for Home Assistant.
@@ -137,15 +163,8 @@ class MyEdenredSensor(SensorEntity):
                             "cookies": api.cookies,
                         },
                     )
-                self._state = account.availableBalance
-                if config["includeTransactions"]:
-                    list = []
-                    [list.append({
-                        "date": t.date,
-                        "name": t.name,
-                        "amount": t.amount
-                    }) for t in account.movementList]
-                    self._transactions = list
+                self._apply_account(account)
+                self._available = True
 
         except MyEdenredAuthError as err:
             self._available = False
