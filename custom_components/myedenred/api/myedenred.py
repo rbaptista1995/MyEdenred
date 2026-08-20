@@ -1,6 +1,9 @@
 """API to MYEDENRED."""
 import aiohttp
+import base64
+import json as jsonlib
 import logging
+from datetime import datetime, timezone
 
 from .account import Account
 from .card import Card
@@ -30,6 +33,29 @@ class MyEdenredChallengeRequired(MyEdenredAuthError):
     def __init__(self, challenge):
         super().__init__("MyEdenred requires a 2FA challenge code")
         self.challenge = challenge
+
+
+def _challenge_id_from(data):
+    """Return the 2FA challenge id from an API payload, if any."""
+    if not isinstance(data, dict):
+        return None
+    return data.get("authenticationMfaProcessId") or data.get("challengeId")
+
+
+def _log_token_expiry(token):
+    """Log the JWT expiration time (best effort) to ease diagnostics."""
+    try:
+        payload = token.split(".")[1]
+        payload += "=" * (-len(payload) % 4)
+        claims = jsonlib.loads(base64.urlsafe_b64decode(payload))
+        exp = claims.get("exp")
+        if exp:
+            _LOGGER.debug(
+                "MyEdenred token expires at %s",
+                datetime.fromtimestamp(exp, tz=timezone.utc),
+            )
+    except (IndexError, ValueError) as err:
+        _LOGGER.debug("Unable to decode MyEdenred token expiry: %s", err)
 
 
 class MY_EDENRED:
@@ -68,15 +94,18 @@ class MY_EDENRED:
                         for name, morsel in res.cookies.items()
                     }
                 )
-            if res.content_type == "application/json":
-                json = await res.json()
-                if res.status == 200:
-                    return json
-                if res.status == 401:
-                    raise MyEdenredAuthError("MyEdenred authentication failed")
-                message = json.get("message", "MyEdenred API request failed")
-                raise MyEdenredError(message)
-            raise MyEdenredError("Unexpected response from MyEdenred API")
+            if res.content_type != "application/json":
+                raise MyEdenredError("Unexpected response from MyEdenred API")
+            json = await res.json()
+            if res.status == 200:
+                return json
+            if res.status == 401:
+                # The API may signal a required 2FA challenge in the 401 body.
+                if _challenge_id_from(json.get("data") if isinstance(json, dict) else None):
+                    raise MyEdenredChallengeRequired(json.get("data"))
+                raise MyEdenredAuthError("MyEdenred authentication failed")
+            message = json.get("message", "MyEdenred API request failed") if isinstance(json, dict) else "MyEdenred API request failed"
+            raise MyEdenredError(message)
 
     async def authenticate(self, username, password):
         """Issue LOGIN request."""
@@ -91,10 +120,11 @@ class MY_EDENRED:
             )
             data = json.get("data", {})
             data["cookies"] = self.cookies
-            if data.get("challengeId"):
+            if _challenge_id_from(data):
                 raise MyEdenredChallengeRequired(data)
             if data.get("token"):
                 _LOGGER.debug("Done logging in.")
+                _log_token_expiry(data["token"])
                 return data
             raise MyEdenredAuthError("Could not retrieve token for user, login failed")
         except aiohttp.ClientError as err:
@@ -128,6 +158,7 @@ class MY_EDENRED:
             data = json.get("data", {})
             data["cookies"] = self.cookies
             if data.get("token"):
+                _log_token_expiry(data["token"])
                 return data
             raise MyEdenredAuthError("Could not retrieve token after 2FA challenge")
         except aiohttp.ClientError as err:

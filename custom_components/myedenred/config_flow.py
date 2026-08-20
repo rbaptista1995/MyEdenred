@@ -1,6 +1,7 @@
 """Config flow for myEdenred integration."""
 from __future__ import annotations
 
+import asyncio
 import logging
 import voluptuous as vol
 import async_timeout
@@ -8,7 +9,12 @@ import async_timeout
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api.myedenred import MY_EDENRED, MyEdenredAuthError, MyEdenredChallengeRequired
+from .api.myedenred import (
+    MY_EDENRED,
+    MyEdenredAuthError,
+    MyEdenredChallengeRequired,
+    MyEdenredError,
+)
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -109,7 +115,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_reauth(self, entry_data):
-        """Handle reauthentication."""
+        """Handle reauthentication triggered by an expired token."""
         self._reauth_entry = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
         )
@@ -118,7 +124,43 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             "password": entry_data["password"],
             "includeTransactions": entry_data["includeTransactions"],
         }
-        return await self.async_step_reauth_confirm()
+
+        # Try a silent re-login with the stored credentials before asking
+        # the user for anything.
+        session = async_get_clientsession(self.hass, True)
+        api = MY_EDENRED(session, entry_data.get("cookies"))
+        try:
+            async with async_timeout.timeout(10):
+                result = await api.authenticate(
+                    self._pending_user_input["username"],
+                    self._pending_user_input["password"],
+                )
+        except MyEdenredChallengeRequired as exception:
+            self._pending_challenge = exception.challenge
+            return await self.async_step_challenge()
+        except (asyncio.TimeoutError, MyEdenredError) as exception:
+            _LOGGER.debug("Silent re-login failed, showing reauth form: %s", exception)
+            # If silent re-login fails, fall back to full reauth flow
+            return self.async_show_form(
+                step_id="reauth_confirm",
+                data_schema=DATA_SCHEMA,
+                errors={"base": "reauth_failed"},
+            )
+        except Exception as exception:
+            _LOGGER.debug("Silent re-login failed with exception: %s", exception)
+            # If silent re-login fails, fall back to full reauth flow
+            return self.async_show_form(
+                step_id="reauth_confirm",
+                data_schema=DATA_SCHEMA,
+                errors={"base": "reauth_failed"},
+            )
+
+        data = dict(self._pending_user_input)
+        data["token"] = result["token"]
+        data["cookies"] = result.get("cookies", {})
+        self.hass.config_entries.async_update_entry(self._reauth_entry, data=data)
+        await self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
+        return self.async_abort(reason="reauth_successful")
 
     async def async_step_reauth_confirm(self, user_input=None):
         """Ask for credentials again when the token has expired."""
