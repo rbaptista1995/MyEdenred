@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Release packaging output
+dist/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+# Local agent settings
+.qwen/
