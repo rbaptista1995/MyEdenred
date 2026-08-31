@@ -1,14 +1,14 @@
 {
-    "version": "2.3.3",
-    "domain": "myedenred",
-    "name": "myEdenred Card Integration",
-    "documentation": "https://github.com/netsoft-ruidias/ha-custom-component-myedenred/blob/main/README.md",
-    "issue_tracker": "https://github.com/netsoft-ruidias/ha-custom-component-myedenred/issues",
-    "iot_class": "cloud_polling",
-    "requirements": [],
-    "dependencies": [],
-    "codeowners": [
-        "@netsoft-ruidias"
-    ],
-    "config_flow": true
+  "domain": "myedenred",
+  "name": "MyEdenred",
+  "version": "2.3.3",
+  "documentation": "https://github.com/rbaptista1995/MyEdenred",
+  "issue_tracker": "https://github.com/rbaptista1995/MyEdenred/issues",
+  "codeowners": [
+    "@rbaptista1995"
+  ],
+  "config_flow": true,
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "dependencies": []
 }
