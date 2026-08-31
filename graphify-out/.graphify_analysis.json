@@ -1,0 +1,313 @@
+{
+  "communities": {
+    "0": [
+      "any",
+      "custom_components_myedenred_sensor_async_setup_entry",
+      "custom_components_myedenred_sensor_myedenredsensor",
+      "custom_components_myedenred_sensor_myedenredsensor_apply_account",
+      "custom_components_myedenred_sensor_myedenredsensor_async_update",
+      "custom_components_myedenred_sensor_myedenredsensor_attribution",
+      "custom_components_myedenred_sensor_myedenredsensor_available",
+      "custom_components_myedenred_sensor_myedenredsensor_device_class",
+      "custom_components_myedenred_sensor_myedenredsensor_extra_state_attributes",
+      "custom_components_myedenred_sensor_myedenredsensor_icon",
+      "custom_components_myedenred_sensor_myedenredsensor_init",
+      "custom_components_myedenred_sensor_myedenredsensor_name",
+      "custom_components_myedenred_sensor_myedenredsensor_state",
+      "custom_components_myedenred_sensor_myedenredsensor_state_class",
+      "custom_components_myedenred_sensor_myedenredsensor_unique_id",
+      "custom_components_myedenred_sensor_myedenredsensor_unit_of_measurement",
+      "custom_components_myedenred_sensor_py_configentry",
+      "custom_components_myedenred_sensor_py_homeassistant",
+      "custom_components_myedenred_sensor_rationale_115",
+      "custom_components_myedenred_sensor_rationale_128",
+      "custom_components_myedenred_sensor_rationale_137",
+      "custom_components_myedenred_sensor_rationale_150",
+      "custom_components_myedenred_sensor_rationale_43",
+      "custom_components_myedenred_sensor_rationale_61",
+      "custom_components_myedenred_sensor_rationale_88",
+      "custom_components_myedenred_sensor_rationale_93",
+      "custom_components_myedenred_sensor_rationale_98",
+      "sensorentity"
+    ],
+    "1": [
+      "custom_components_myedenred_api_card",
+      "custom_components_myedenred_api_consts",
+      "custom_components_myedenred_api_myedenred",
+      "custom_components_myedenred_api_myedenred_challenge_id_from",
+      "custom_components_myedenred_api_myedenred_log_token_expiry",
+      "custom_components_myedenred_api_myedenred_my_edenred_authenticate",
+      "custom_components_myedenred_api_myedenred_my_edenred_login_with_challenge",
+      "custom_components_myedenred_api_myedenred_my_edenred_request_json",
+      "custom_components_myedenred_api_myedenred_myedenredautherror",
+      "custom_components_myedenred_api_myedenred_myedenredchallengerequired",
+      "custom_components_myedenred_api_myedenred_myedenrederror",
+      "custom_components_myedenred_api_myedenred_rationale_140",
+      "custom_components_myedenred_api_myedenred_rationale_23",
+      "custom_components_myedenred_api_myedenred_rationale_27",
+      "custom_components_myedenred_api_myedenred_rationale_31",
+      "custom_components_myedenred_api_myedenred_rationale_39",
+      "custom_components_myedenred_api_myedenred_rationale_46",
+      "custom_components_myedenred_api_myedenred_rationale_88",
+      "custom_components_myedenred_config_flow",
+      "custom_components_myedenred_config_flow_rationale_1",
+      "custom_components_myedenred_const",
+      "custom_components_myedenred_sensor",
+      "custom_components_myedenred_sensor_rationale_1",
+      "exception"
+    ],
+    "2": [
+      "custom_components_myedenred_api_account",
+      "custom_components_myedenred_api_account_account",
+      "custom_components_myedenred_api_account_account_availablebalance",
+      "custom_components_myedenred_api_account_account_cardactivated",
+      "custom_components_myedenred_api_account_account_cardholderfirstname",
+      "custom_components_myedenred_api_account_account_cardholderlastname",
+      "custom_components_myedenred_api_account_account_cardnumber",
+      "custom_components_myedenred_api_account_account_iban",
+      "custom_components_myedenred_api_account_account_init",
+      "custom_components_myedenred_api_account_account_movementlist",
+      "custom_components_myedenred_api_account_rationale_6",
+      "custom_components_myedenred_api_transaction",
+      "custom_components_myedenred_api_transaction_rationale_4",
+      "custom_components_myedenred_api_transaction_transaction",
+      "custom_components_myedenred_api_transaction_transaction_amount",
+      "custom_components_myedenred_api_transaction_transaction_date",
+      "custom_components_myedenred_api_transaction_transaction_init",
+      "custom_components_myedenred_api_transaction_transaction_name"
+    ],
+    "3": [
+      "custom_components_myedenred_api_myedenred_my_edenred",
+      "custom_components_myedenred_api_myedenred_my_edenred_cookie_header",
+      "custom_components_myedenred_api_myedenred_my_edenred_getaccountdetails",
+      "custom_components_myedenred_api_myedenred_my_edenred_getcards",
+      "custom_components_myedenred_api_myedenred_my_edenred_headers",
+      "custom_components_myedenred_api_myedenred_my_edenred_init",
+      "custom_components_myedenred_api_myedenred_my_edenred_login",
+      "custom_components_myedenred_api_myedenred_myedenredchallengerequired_init",
+      "custom_components_myedenred_api_myedenred_rationale_135",
+      "custom_components_myedenred_api_myedenred_rationale_169",
+      "custom_components_myedenred_api_myedenred_rationale_185",
+      "custom_components_myedenred_api_myedenred_rationale_62",
+      "custom_components_myedenred_api_myedenred_rationale_70",
+      "custom_components_myedenred_api_myedenred_rationale_78",
+      "example",
+      "example_main"
+    ],
+    "4": [
+      "custom_components_myedenred_config_flow_configflow",
+      "custom_components_myedenred_config_flow_configflow_async_step_challenge",
+      "custom_components_myedenred_config_flow_configflow_async_step_reauth",
+      "custom_components_myedenred_config_flow_configflow_async_step_reauth_confirm",
+      "custom_components_myedenred_config_flow_configflow_async_step_user",
+      "custom_components_myedenred_config_flow_configflow_authenticate",
+      "custom_components_myedenred_config_flow_configflow_init",
+      "custom_components_myedenred_config_flow_rationale_118",
+      "custom_components_myedenred_config_flow_rationale_166",
+      "custom_components_myedenred_config_flow_rationale_196",
+      "custom_components_myedenred_config_flow_rationale_35",
+      "custom_components_myedenred_config_flow_rationale_41",
+      "custom_components_myedenred_config_flow_rationale_47",
+      "custom_components_myedenred_config_flow_rationale_77"
+    ],
+    "5": [
+      "configtype",
+      "custom_components_myedenred_init",
+      "custom_components_myedenred_init_async_reload_entry",
+      "custom_components_myedenred_init_async_relogin",
+      "custom_components_myedenred_init_async_setup",
+      "custom_components_myedenred_init_async_setup_entry",
+      "custom_components_myedenred_init_async_unload_entry",
+      "custom_components_myedenred_init_py_configentry",
+      "custom_components_myedenred_init_py_homeassistant",
+      "custom_components_myedenred_init_rationale_1",
+      "custom_components_myedenred_init_rationale_111",
+      "custom_components_myedenred_init_rationale_32",
+      "custom_components_myedenred_init_rationale_46"
+    ],
+    "6": [
+      "custom_components_myedenred_manifest",
+      "custom_components_myedenred_manifest_codeowners",
+      "custom_components_myedenred_manifest_config_flow",
+      "custom_components_myedenred_manifest_dependencies",
+      "custom_components_myedenred_manifest_documentation",
+      "custom_components_myedenred_manifest_domain",
+      "custom_components_myedenred_manifest_iot_class",
+      "custom_components_myedenred_manifest_issue_tracker",
+      "custom_components_myedenred_manifest_name",
+      "custom_components_myedenred_manifest_requirements",
+      "custom_components_myedenred_manifest_version",
+      "ref_netsoft_ruidias"
+    ],
+    "7": [
+      "custom_components_myedenred_api_card_card",
+      "custom_components_myedenred_api_card_card_id",
+      "custom_components_myedenred_api_card_card_init",
+      "custom_components_myedenred_api_card_card_number",
+      "custom_components_myedenred_api_card_card_ownername",
+      "custom_components_myedenred_api_card_card_status",
+      "custom_components_myedenred_api_card_rationale_4"
+    ],
+    "8": [
+      "custom_components_myedenred_api_init",
+      "custom_components_myedenred_api_init_rationale_1"
+    ]
+  },
+  "cohesion": {
+    "0": 0.082010582010582,
+    "1": 0.15942028985507245,
+    "2": 0.13071895424836602,
+    "3": 0.15833333333333333,
+    "4": 0.1978021978021978,
+    "5": 0.28205128205128205,
+    "6": 0.16666666666666666,
+    "7": 0.2857142857142857,
+    "8": 1.0
+  },
+  "gods": [
+    {
+      "id": "custom_components_myedenred_api_myedenred_my_edenred",
+      "label": "MY_EDENRED",
+      "degree": 24
+    },
+    {
+      "id": "custom_components_myedenred_api_account_account",
+      "label": "Account",
+      "degree": 17
+    },
+    {
+      "id": "custom_components_myedenred_sensor_myedenredsensor",
+      "label": "MyEdenredSensor",
+      "degree": 17
+    },
+    {
+      "id": "custom_components_myedenred_api_card_card",
+      "label": "Card",
+      "degree": 15
+    },
+    {
+      "id": "custom_components_myedenred_api_myedenred_myedenrederror",
+      "label": "MyEdenredError",
+      "degree": 14
+    },
+    {
+      "id": "custom_components_myedenred_api_myedenred_myedenredautherror",
+      "label": "MyEdenredAuthError",
+      "degree": 13
+    },
+    {
+      "id": "custom_components_myedenred_api_myedenred_myedenredchallengerequired",
+      "label": "MyEdenredChallengeRequired",
+      "degree": 11
+    },
+    {
+      "id": "custom_components_myedenred_api_transaction_transaction",
+      "label": "Transaction",
+      "degree": 9
+    },
+    {
+      "id": "custom_components_myedenred_init_async_relogin",
+      "label": "async_relogin()",
+      "degree": 8
+    },
+    {
+      "id": "custom_components_myedenred_config_flow_configflow",
+      "label": "ConfigFlow",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "main()",
+      "target": "MY_EDENRED",
+      "source_files": [
+        "example.py",
+        "custom_components/myedenred/api/myedenred.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `main()` unexpectedly reaches hub `MY_EDENRED`"
+    },
+    {
+      "source": "MY_EDENRED",
+      "target": "Account",
+      "source_files": [
+        "custom_components/myedenred/api/myedenred.py",
+        "custom_components/myedenred/api/account.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    },
+    {
+      "source": "MyEdenredAuthError",
+      "target": "Account",
+      "source_files": [
+        "custom_components/myedenred/api/myedenred.py",
+        "custom_components/myedenred/api/account.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    },
+    {
+      "source": "MyEdenredChallengeRequired",
+      "target": "Account",
+      "source_files": [
+        "custom_components/myedenred/api/myedenred.py",
+        "custom_components/myedenred/api/account.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    },
+    {
+      "source": "MyEdenredError",
+      "target": "Account",
+      "source_files": [
+        "custom_components/myedenred/api/myedenred.py",
+        "custom_components/myedenred/api/account.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `MY_EDENRED` connect `MY_EDENRED` to `MyEdenredSensor`, `myedenred.py`, `Account`, `ConfigFlow`, `myedenred/__init__.py`, `Card`?",
+      "why": "High betweenness centrality (0.321) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `MyEdenredSensor` connect `MyEdenredSensor` to `myedenred.py`?",
+      "why": "High betweenness centrality (0.213) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Account` connect `Account` to `myedenred.py`, `MY_EDENRED`?",
+      "why": "High betweenness centrality (0.187) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 2 inferred relationships involving `MY_EDENRED` (e.g. with `Account` and `Card`) actually correct?",
+      "why": "`MY_EDENRED` has 2 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 5 inferred relationships involving `Account` (e.g. with `Transaction` and `MY_EDENRED`) actually correct?",
+      "why": "`Account` has 5 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 4 inferred relationships involving `Card` (e.g. with `MY_EDENRED` and `MyEdenredAuthError`) actually correct?",
+      "why": "`Card` has 4 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 2 inferred relationships involving `MyEdenredError` (e.g. with `Account` and `Card`) actually correct?",
+      "why": "`MyEdenredError` has 2 INFERRED edges - model-reasoned connections that need verification."
+    }
+  ]
+}
