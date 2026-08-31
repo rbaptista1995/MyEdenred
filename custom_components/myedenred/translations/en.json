@@ -36,13 +36,8 @@
     "reauth": {
         "step": {
             "reauth_confirm": {
-                "title": "Renew MyEdenred login",
-                "description": "The saved login expired and could not be renewed automatically. Enter your MyEdenred credentials.",
-                "data": {
-                    "username": "Email",
-                    "password": "Password",
-                    "includeTransactions": "Include the transaction list?"
-                }
+                "title": "Request a new verification code",
+                "description": "MyEdenred could not start email verification automatically. Submit to retry using the saved login."
             },
             "challenge": {
                 "title": "Email verification code",
@@ -55,7 +50,7 @@
         "error": {
             "auth": "Invalid credentials accessing https://www.myedenred.pt/ portal.",
             "invalid_code": "Invalid or expired verification code.",
-            "reauth_failed": "Could not renew the MyEdenred login automatically. Please check your credentials."
+            "reauth_failed": "Could not request a new MyEdenred verification code. Submit to retry."
         },
         "abort": {
             "reauth_successful": "MyEdenred authentication was renewed successfully."

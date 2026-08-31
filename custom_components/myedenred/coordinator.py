@@ -17,7 +17,7 @@ from .api.myedenred import MY_EDENRED, MyEdenredAuthError, MyEdenredError
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
-UPDATE_INTERVAL = timedelta(minutes=10)
+UPDATE_INTERVAL = timedelta(minutes=5)
 
 
 class MyEdenredDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Account]]):
@@ -49,6 +49,10 @@ class MyEdenredDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Account]]):
             raise ConfigEntryAuthFailed("MyEdenred session is missing")
 
         try:
+            # The portal refreshes both the card list and movements when opening
+            # My Cards. Mirroring that activity gives server-side sessions the
+            # best chance to keep their sliding idle timeout alive.
+            self.cards = await self.api.getCards(token)
             accounts = {
                 card.id: await self.api.getAccountDetails(card.id, token)
                 for card in self.cards
