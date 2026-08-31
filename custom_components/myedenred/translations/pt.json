@@ -22,15 +22,6 @@
                 "data": {
                     "code": "Codigo"
                 }
-            },
-            "reauth_confirm": {
-                "title": "Renovar autenticacao MyEdenred",
-                "description": "Introduza novamente as suas credenciais MyEdenred. A seguir podera ser pedido o codigo de verificacao por email.",
-                "data": {
-                    "username": "Email",
-                    "password": "Palavra Passe",
-                    "includeTransactions": "Incluir a lista de transacoes?"
-                }
             }
         },
         "error": {
@@ -39,7 +30,34 @@
         },
         "abort": {
             "single_instance_allowed": "So e permitida uma unica integracao do myEdenred.",
-            "already_configured": "Esta integracao ja existe",
+            "already_configured": "Esta integracao ja existe"
+        }
+    },
+    "reauth": {
+        "step": {
+            "reauth_confirm": {
+                "title": "Renovar autenticacao MyEdenred",
+                "description": "A autenticacao guardada expirou e nao foi possivel renova-la automaticamente. Introduza as suas credenciais MyEdenred.",
+                "data": {
+                    "username": "Email",
+                    "password": "Palavra Passe",
+                    "includeTransactions": "Incluir a lista de transacoes?"
+                }
+            },
+            "challenge": {
+                "title": "Codigo de verificacao por email",
+                "description": "Introduza o codigo enviado pelo MyEdenred para o seu email.",
+                "data": {
+                    "code": "Codigo"
+                }
+            }
+        },
+        "error": {
+            "auth": "Credenciais invalidas para https://www.myedenred.pt/.",
+            "invalid_code": "Codigo de verificacao invalido ou expirado.",
+            "reauth_failed": "Nao foi possivel renovar a autenticacao MyEdenred automaticamente. Verifique as suas credenciais."
+        },
+        "abort": {
             "reauth_successful": "A autenticacao MyEdenred foi renovada com sucesso."
         }
     }

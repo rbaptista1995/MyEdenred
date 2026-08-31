@@ -8,7 +8,12 @@ import async_timeout
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api.myedenred import MY_EDENRED, MyEdenredAuthError, MyEdenredChallengeRequired
+from .api.myedenred import (
+    MY_EDENRED,
+    MyEdenredAuthError,
+    MyEdenredChallengeRequired,
+    MyEdenredError,
+)
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -109,7 +114,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_reauth(self, entry_data):
-        """Handle reauthentication."""
+        """Handle reauthentication triggered by an expired token."""
         self._reauth_entry = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
         )
@@ -118,6 +123,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             "password": entry_data["password"],
             "includeTransactions": entry_data["includeTransactions"],
         }
+
+        # Do not authenticate automatically here. Edenred sends a 2FA email for
+        # each authentication attempt, so only an explicit form submission may
+        # start a new login.
         return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(self, user_input=None):
