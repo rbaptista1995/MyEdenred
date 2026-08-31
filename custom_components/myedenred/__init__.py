@@ -6,7 +6,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.typing import ConfigType
 
 from .api.myedenred import MY_EDENRED, MyEdenredAuthError, MyEdenredError
 from .coordinator import MyEdenredDataUpdateCoordinator
@@ -18,11 +17,6 @@ _LOGGER.setLevel(logging.DEBUG)
 
 PLATFORMS: list[str] = ["sensor"]
 
-
-async def async_setup(hass: HomeAssistant, config: ConfigType):
-    # Return boolean to indicate that initialization was successful.
-    _LOGGER.debug("async_setup")
-    return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up the component from a config entry."""

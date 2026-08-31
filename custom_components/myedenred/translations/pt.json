@@ -22,29 +22,10 @@
                 "data": {
                     "code": "Codigo"
                 }
-            }
-        },
-        "error": {
-            "auth": "Credenciais invalidas para https://www.myedenred.pt/.",
-            "invalid_code": "Codigo de verificacao invalido ou expirado."
-        },
-        "abort": {
-            "single_instance_allowed": "So e permitida uma unica integracao do myEdenred.",
-            "already_configured": "Esta integracao ja existe"
-        }
-    },
-    "reauth": {
-        "step": {
+            },
             "reauth_confirm": {
                 "title": "Pedir novo codigo de verificacao",
                 "description": "Nao foi possivel iniciar automaticamente a verificacao por email. Submeta para voltar a tentar com as credenciais guardadas."
-            },
-            "challenge": {
-                "title": "Codigo de verificacao por email",
-                "description": "Introduza o codigo enviado pelo MyEdenred para o seu email.",
-                "data": {
-                    "code": "Codigo"
-                }
             }
         },
         "error": {
@@ -53,6 +34,8 @@
             "reauth_failed": "Nao foi possivel pedir um novo codigo de verificacao MyEdenred. Submeta para voltar a tentar."
         },
         "abort": {
+            "single_instance_allowed": "So e permitida uma unica integracao do myEdenred.",
+            "already_configured": "Esta integracao ja existe",
             "reauth_successful": "A autenticacao MyEdenred foi renovada com sucesso."
         }
     }

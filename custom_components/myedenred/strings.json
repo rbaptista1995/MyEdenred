@@ -22,29 +22,10 @@
                 "data": {
                     "code": "Code"
                 }
-            }
-        },
-        "error": {
-            "auth": "Invalid credentials accessing https://www.myedenred.pt/ portal.",
-            "invalid_code": "Invalid or expired verification code."
-        },
-        "abort": {
-            "single_instance_allowed": "Only a single configuration of myEdenred is allowed.",
-            "already_configured": "Integration is already configured"
-        }
-    },
-    "reauth": {
-        "step": {
+            },
             "reauth_confirm": {
                 "title": "Request a new verification code",
                 "description": "MyEdenred could not start email verification automatically. Submit to retry using the saved login."
-            },
-            "challenge": {
-                "title": "Email verification code",
-                "description": "Enter the code sent by MyEdenred to your email.",
-                "data": {
-                    "code": "Code"
-                }
             }
         },
         "error": {
@@ -53,6 +34,8 @@
             "reauth_failed": "Could not request a new MyEdenred verification code. Submit to retry."
         },
         "abort": {
+            "single_instance_allowed": "Only a single configuration of myEdenred is allowed.",
+            "already_configured": "Integration is already configured",
             "reauth_successful": "MyEdenred authentication was renewed successfully."
         }
     }
