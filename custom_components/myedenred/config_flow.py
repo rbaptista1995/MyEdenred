@@ -28,6 +28,7 @@ DATA_SCHEMA = vol.Schema(
 )
 
 CHALLENGE_SCHEMA = vol.Schema({vol.Required("code"): str})
+REAUTH_SCHEMA = vol.Schema({})
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -87,7 +88,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         self._pending_challenge,
                         user_input["code"],
                     )
-                    data = dict(self._pending_user_input)
+                    data = (
+                        {**self._reauth_entry.data, **self._pending_user_input}
+                        if self._reauth_entry
+                        else dict(self._pending_user_input)
+                    )
                     data["token"] = result["token"]
                     data["cookies"] = result.get("cookies", {})
                     if self._reauth_entry:
@@ -124,46 +129,47 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             "includeTransactions": entry_data["includeTransactions"],
         }
 
-        # Do not authenticate automatically here. Edenred sends a 2FA email for
-        # each authentication attempt, so only an explicit form submission may
-        # start a new login.
-        return await self.async_step_reauth_confirm()
+        return await self._start_reauth(entry_data)
 
     async def async_step_reauth_confirm(self, user_input=None):
-        """Ask for credentials again when the token has expired."""
+        """Retry starting 2FA without asking for saved credentials."""
         if user_input is not None:
-            data = dict(self._pending_user_input)
-            data.update(user_input)
-            result = await self._authenticate(data)
-            if isinstance(result, dict) and result.get("token"):
-                data["token"] = result["token"]
-                data["cookies"] = result.get("cookies", {})
-                self.hass.config_entries.async_update_entry(
-                    self._reauth_entry,
-                    data=data,
-                )
-                await self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
-                return self.async_abort(reason="reauth_successful")
-            if isinstance(result, MyEdenredChallengeRequired):
-                self._pending_user_input = data
-                self._pending_challenge = result.challenge
-                return await self.async_step_challenge()
-            return self.async_show_form(
-                step_id="reauth_confirm",
-                data_schema=DATA_SCHEMA,
-                errors={"base": "auth"},
-            )
+            return await self._start_reauth(self._reauth_entry.data)
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=DATA_SCHEMA,
+            data_schema=REAUTH_SCHEMA,
         )
 
-    async def _authenticate(self, user_input):
+    async def _start_reauth(self, entry_data):
+        """Use saved credentials once and continue directly to the 2FA code."""
+        result = await self._authenticate(
+            self._pending_user_input,
+            cookies=entry_data.get("cookies"),
+        )
+        if isinstance(result, dict) and result.get("token"):
+            data = {
+                **entry_data,
+                "token": result["token"],
+                "cookies": result.get("cookies", {}),
+            }
+            self.hass.config_entries.async_update_entry(self._reauth_entry, data=data)
+            await self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
+            return self.async_abort(reason="reauth_successful")
+        if isinstance(result, MyEdenredChallengeRequired):
+            self._pending_challenge = result.challenge
+            return await self.async_step_challenge()
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=REAUTH_SCHEMA,
+            errors={"base": "reauth_failed"},
+        )
+
+    async def _authenticate(self, user_input, cookies=None):
         """Return authentication data or a challenge-required marker."""
         session = async_get_clientsession(self.hass, True)
         async with async_timeout.timeout(10):
-            api = MY_EDENRED(session)
+            api = MY_EDENRED(session, cookies)
             try:
                 return await api.authenticate(
                     user_input["username"], user_input["password"]

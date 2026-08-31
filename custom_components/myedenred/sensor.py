@@ -85,6 +85,7 @@ class MyEdenredSensor(
             "ownerName": self._card.ownerName,
             "cardStatus": self._card.status,
             "cardNumber": self._card.number,
+            "transactions": [],
         }
         if self._config_entry.data["includeTransactions"]:
             account = self.coordinator.data.get(self._card.id)

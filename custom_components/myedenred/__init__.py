@@ -12,7 +12,7 @@ from .api.myedenred import MY_EDENRED, MyEdenredAuthError, MyEdenredError
 from .coordinator import MyEdenredDataUpdateCoordinator
 from .const import DOMAIN
 
-__version__ = "2.3.2"
+__version__ = "2.3.3"
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 

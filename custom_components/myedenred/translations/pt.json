@@ -36,13 +36,8 @@
     "reauth": {
         "step": {
             "reauth_confirm": {
-                "title": "Renovar autenticacao MyEdenred",
-                "description": "A autenticacao guardada expirou e nao foi possivel renova-la automaticamente. Introduza as suas credenciais MyEdenred.",
-                "data": {
-                    "username": "Email",
-                    "password": "Palavra Passe",
-                    "includeTransactions": "Incluir a lista de transacoes?"
-                }
+                "title": "Pedir novo codigo de verificacao",
+                "description": "Nao foi possivel iniciar automaticamente a verificacao por email. Submeta para voltar a tentar com as credenciais guardadas."
             },
             "challenge": {
                 "title": "Codigo de verificacao por email",
@@ -55,7 +50,7 @@
         "error": {
             "auth": "Credenciais invalidas para https://www.myedenred.pt/.",
             "invalid_code": "Codigo de verificacao invalido ou expirado.",
-            "reauth_failed": "Nao foi possivel renovar a autenticacao MyEdenred automaticamente. Verifique as suas credenciais."
+            "reauth_failed": "Nao foi possivel pedir um novo codigo de verificacao MyEdenred. Submeta para voltar a tentar."
         },
         "abort": {
             "reauth_successful": "A autenticacao MyEdenred foi renovada com sucesso."
