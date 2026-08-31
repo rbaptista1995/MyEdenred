@@ -11,8 +11,8 @@
                     "includeTransactions": "Include the transaction list?"
                 },
                 "data_description": {
-                    "username": "The email used to login in https://www.myedenred.pt/ portal",
-                    "password": "The password used to login in https://www.myedenred.pt/ portal",
+                    "username": "The email used to login in the MyEdenred portal",
+                    "password": "The password used to login in the MyEdenred portal",
                     "includeTransactions": "Include the transaction list"
                 }
             },
@@ -29,7 +29,7 @@
             }
         },
         "error": {
-            "auth": "Invalid credentials accessing https://www.myedenred.pt/ portal.",
+            "auth": "Invalid credentials accessing the MyEdenred portal.",
             "invalid_code": "Invalid or expired verification code.",
             "reauth_failed": "Could not request a new MyEdenred verification code. Submit to retry."
         },

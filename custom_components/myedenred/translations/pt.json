@@ -4,15 +4,15 @@
         "step": {
             "user": {
                 "title": "Credenciais de Acesso",
-                "description": "Por favor, introduza o seu nome de utilizador e palavra passe que usa para ter acesso ao portal https://www.myedenred.pt/.",
+                "description": "Por favor, introduza o seu nome de utilizador e palavra passe que usa para ter acesso ao portal MyEdenred.",
                 "data": {
                     "username": "Email",
                     "password": "Palavra Passe",
                     "includeTransactions": "Incluir a lista de transacoes?"
                 },
                 "data_description": {
-                    "username": "O Email usado para aceder ao portal https://www.myedenred.pt/",
-                    "password": "A Palavra Passe usada para aceder ao portal https://www.myedenred.pt/",
+                    "username": "O Email usado para aceder ao portal MyEdenred",
+                    "password": "A Palavra Passe usada para aceder ao portal MyEdenred",
                     "includeTransactions": "Incluir a lista de transacoes"
                 }
             },
@@ -29,7 +29,7 @@
             }
         },
         "error": {
-            "auth": "Credenciais invalidas para https://www.myedenred.pt/.",
+            "auth": "Credenciais inválidas ao aceder ao portal MyEdenred.",
             "invalid_code": "Codigo de verificacao invalido ou expirado.",
             "reauth_failed": "Nao foi possivel pedir um novo codigo de verificacao MyEdenred. Submeta para voltar a tentar."
         },
