@@ -1,6 +1,8 @@
 """The my_edenred integration."""
 from __future__ import annotations
+import json
 import logging
+from pathlib import Path
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
@@ -11,7 +13,7 @@ from .api.myedenred import MY_EDENRED, MyEdenredAuthError, MyEdenredError
 from .coordinator import MyEdenredDataUpdateCoordinator
 from .const import DOMAIN
 
-__version__ = "2.3.5"
+__version__ = json.loads(Path(__file__).with_name("manifest.json").read_text(encoding="utf-8"))["version"]
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 
