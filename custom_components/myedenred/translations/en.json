@@ -31,7 +31,9 @@
         "error": {
             "auth": "Invalid credentials accessing the MyEdenred portal.",
             "invalid_code": "Invalid or expired verification code.",
-            "reauth_failed": "Could not request a new MyEdenred verification code. Submit to retry."
+            "reauth_failed": "Could not request a new MyEdenred verification code. Submit to retry.",
+            "timeout": "The request to MyEdenred timed out. Please try again.",
+            "network": "Could not reach the MyEdenred portal. Check your connection and try again."
         },
         "abort": {
             "single_instance_allowed": "Only a single configuration of myEdenred is allowed.",

@@ -1,9 +1,12 @@
 """Config flow for myEdenred integration."""
 from __future__ import annotations
 
+import asyncio
 import logging
-import voluptuous as vol
+
+import aiohttp
 import async_timeout
+import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -19,9 +22,11 @@ from .const import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 
+AUTH_TIMEOUT_SECONDS = 30
+
 DATA_SCHEMA = vol.Schema(
-    { 
-        vol.Required("username"): str, 
+    {
+        vol.Required("username"): str,
         vol.Required("password"): str,
         vol.Required("includeTransactions"): bool,
     }
@@ -45,7 +50,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user interface."""
-        _LOGGER.debug("Starting async_step_user...")
         errors = {}
 
         if user_input is not None:
@@ -58,18 +62,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 user_input["token"] = result["token"]
                 user_input["cookies"] = result.get("cookies", {})
                 return self.async_create_entry(
-                    title="MyEdenred " + user_input["username"], 
-                    data = user_input
-                ) 
+                    title="MyEdenred " + user_input["username"],
+                    data=user_input,
+                )
             if isinstance(result, MyEdenredChallengeRequired):
                 self._pending_user_input = user_input
                 self._pending_challenge = result.challenge
                 return await self.async_step_challenge()
-            errors = {"base": "auth"}
+            errors = {"base": result if isinstance(result, str) else "auth"}
 
         return self.async_show_form(
-            step_id="user", 
-            data_schema=DATA_SCHEMA, 
+            step_id="user",
+            data_schema=DATA_SCHEMA,
             errors=errors,
         )
 
@@ -79,38 +83,54 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             session = async_get_clientsession(self.hass, True)
-            async with async_timeout.timeout(10):
-                api = MY_EDENRED(session, self._pending_challenge.get("cookies"))
-                try:
+            api = MY_EDENRED(session, self._pending_challenge.get("cookies"))
+            result = None
+            try:
+                async with async_timeout.timeout(AUTH_TIMEOUT_SECONDS):
                     result = await api.login_with_challenge(
                         self._pending_user_input["username"],
                         self._pending_user_input["password"],
                         self._pending_challenge,
                         user_input["code"],
                     )
-                    data = (
-                        {**self._reauth_entry.data, **self._pending_user_input}
-                        if self._reauth_entry
-                        else dict(self._pending_user_input)
-                    )
-                    data["token"] = result["token"]
-                    data["cookies"] = result.get("cookies", {})
-                    if self._reauth_entry:
-                        self.hass.config_entries.async_update_entry(
-                            self._reauth_entry,
-                            data=data,
-                        )
-                        await self.hass.config_entries.async_reload(
-                            self._reauth_entry.entry_id
-                        )
-                        return self.async_abort(reason="reauth_successful")
-                    return self.async_create_entry(
-                        title="MyEdenred " + data["username"],
+            except MyEdenredChallengeRequired:
+                # A rejected code makes the API issue a fresh challenge.
+                _LOGGER.error("MyEdenred rejected the 2FA code and issued a new challenge")
+                errors = {"base": "invalid_code"}
+            except MyEdenredAuthError as err:
+                _LOGGER.error("MyEdenred rejected the 2FA code: %s", err)
+                errors = {"base": "invalid_code"}
+            except asyncio.TimeoutError:
+                _LOGGER.error(
+                    "MyEdenred 2FA request timed out after %s seconds",
+                    AUTH_TIMEOUT_SECONDS,
+                )
+                errors = {"base": "timeout"}
+            except (aiohttp.ClientError, MyEdenredError) as err:
+                _LOGGER.error("MyEdenred 2FA request failed: %s", err)
+                errors = {"base": "network"}
+
+            if result is not None:
+                data = (
+                    {**self._reauth_entry.data, **self._pending_user_input}
+                    if self._reauth_entry
+                    else dict(self._pending_user_input)
+                )
+                data["token"] = result["token"]
+                data["cookies"] = result.get("cookies", {})
+                if self._reauth_entry:
+                    self.hass.config_entries.async_update_entry(
+                        self._reauth_entry,
                         data=data,
                     )
-                except Exception as exception:
-                    _LOGGER.error(exception)
-                    errors = {"base": "invalid_code"}
+                    await self.hass.config_entries.async_reload(
+                        self._reauth_entry.entry_id
+                    )
+                    return self.async_abort(reason="reauth_successful")
+                return self.async_create_entry(
+                    title="MyEdenred " + data["username"],
+                    data=data,
+                )
 
         return self.async_show_form(
             step_id="challenge",
@@ -159,26 +179,34 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if isinstance(result, MyEdenredChallengeRequired):
             self._pending_challenge = result.challenge
             return await self.async_step_challenge()
+        error = result if result in ("timeout", "network") else "reauth_failed"
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=REAUTH_SCHEMA,
-            errors={"base": "reauth_failed"},
+            errors={"base": error},
         )
 
     async def _authenticate(self, user_input, cookies=None):
-        """Return authentication data or a challenge-required marker."""
+        """Return authentication data, a challenge marker, or an error key."""
         session = async_get_clientsession(self.hass, True)
-        async with async_timeout.timeout(10):
-            api = MY_EDENRED(session, cookies)
-            try:
+        api = MY_EDENRED(session, cookies)
+        try:
+            async with async_timeout.timeout(AUTH_TIMEOUT_SECONDS):
                 return await api.authenticate(
                     user_input["username"], user_input["password"]
                 )
-            except MyEdenredChallengeRequired as exception:
-                return exception
-            except MyEdenredAuthError as exception:
-                _LOGGER.error(exception)
-                return None
-            except Exception as exception:
-                _LOGGER.error(exception)
-                return None
+        except MyEdenredChallengeRequired as err:
+            _LOGGER.debug("MyEdenred requires an email 2FA challenge")
+            return err
+        except MyEdenredAuthError as err:
+            _LOGGER.error("MyEdenred rejected the credentials: %s", err)
+            return "auth"
+        except asyncio.TimeoutError:
+            _LOGGER.error(
+                "MyEdenred authentication timed out after %s seconds",
+                AUTH_TIMEOUT_SECONDS,
+            )
+            return "timeout"
+        except (aiohttp.ClientError, MyEdenredError) as err:
+            _LOGGER.error("MyEdenred authentication request failed: %s", err)
+            return "network"

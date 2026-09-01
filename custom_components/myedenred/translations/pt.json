@@ -31,7 +31,9 @@
         "error": {
             "auth": "Credenciais inválidas ao aceder ao portal MyEdenred.",
             "invalid_code": "Codigo de verificacao invalido ou expirado.",
-            "reauth_failed": "Nao foi possivel pedir um novo codigo de verificacao MyEdenred. Submeta para voltar a tentar."
+            "reauth_failed": "Nao foi possivel pedir um novo codigo de verificacao MyEdenred. Submeta para voltar a tentar.",
+            "timeout": "O pedido ao portal MyEdenred excedeu o tempo de espera. Tente novamente.",
+            "network": "Nao foi possivel contactar o portal MyEdenred. Verifique a ligacao e tente novamente."
         },
         "abort": {
             "single_instance_allowed": "So e permitida uma unica integracao do myEdenred.",

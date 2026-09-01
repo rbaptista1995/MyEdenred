@@ -42,6 +42,13 @@ def _challenge_id_from(data):
     return data.get("authenticationMfaProcessId") or data.get("challengeId")
 
 
+def _data_payload(json_body):
+    """Return the dict data payload from an API body, if any."""
+    if isinstance(json_body, dict) and isinstance(json_body.get("data"), dict):
+        return json_body["data"]
+    return {}
+
+
 def _log_token_expiry(token):
     """Log the JWT expiration time (best effort) to ease diagnostics."""
     try:
@@ -96,7 +103,10 @@ class MY_EDENRED:
                 )
             if res.content_type != "application/json":
                 raise MyEdenredError("Unexpected response from MyEdenred API")
-            json = await res.json()
+            try:
+                json = await res.json()
+            except (jsonlib.JSONDecodeError, UnicodeDecodeError) as err:
+                raise MyEdenredError("Invalid JSON response from MyEdenred API") from err
             if res.status == 200:
                 return json
             if res.status == 401:
@@ -118,7 +128,7 @@ class MY_EDENRED:
                 headers=self._headers(),
                 json={"userId": username, "password": password},
             )
-            data = json.get("data", {})
+            data = _data_payload(json)
             data["cookies"] = self.cookies
             if _challenge_id_from(data):
                 raise MyEdenredChallengeRequired(data)
@@ -155,7 +165,7 @@ class MY_EDENRED:
                     "token": code,
                 },
             )
-            data = json.get("data", {})
+            data = _data_payload(json)
             data["cookies"] = self.cookies
             if data.get("token"):
                 _log_token_expiry(data["token"])
