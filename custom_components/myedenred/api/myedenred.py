@@ -49,20 +49,82 @@ def _data_payload(json_body):
     return {}
 
 
-def _log_token_expiry(token):
-    """Log the JWT expiration time (best effort) to ease diagnostics."""
+TOKEN_FIELD_NAMES = ("token", "refreshToken", "sessionToken")
+
+
+def _jwt_claims(token):
+    """Return the decoded JWT claims without exposing the raw token."""
     try:
         payload = token.split(".")[1]
         payload += "=" * (-len(payload) % 4)
-        claims = jsonlib.loads(base64.urlsafe_b64decode(payload))
-        exp = claims.get("exp")
-        if exp:
-            _LOGGER.debug(
-                "MyEdenred token expires at %s",
+        return jsonlib.loads(base64.urlsafe_b64decode(payload))
+    except (IndexError, ValueError, TypeError) as err:
+        _LOGGER.debug("Unable to decode MyEdenred token claims: %s", err)
+        return None
+
+
+def _log_token_expiry(token):
+    """Log JWT iat/exp/lifetime/remaining (best effort), never the token."""
+    claims = _jwt_claims(token)
+    if not claims:
+        return
+    iat = claims.get("iat")
+    exp = claims.get("exp")
+    if not exp:
+        return
+    now = datetime.now(timezone.utc).timestamp()
+    details = ["MyEdenred token expires at %s"]
+    args = [datetime.fromtimestamp(exp, tz=timezone.utc)]
+    if iat:
+        details.append(
+            "iat=%s exp=%s lifetime=%ss remaining=%ss"
+        )
+        args.extend(
+            [
+                datetime.fromtimestamp(iat, tz=timezone.utc),
                 datetime.fromtimestamp(exp, tz=timezone.utc),
-            )
-    except (IndexError, ValueError) as err:
-        _LOGGER.debug("Unable to decode MyEdenred token expiry: %s", err)
+                int(exp - iat),
+                int(exp - now),
+            ]
+        )
+    _LOGGER.debug(" ".join(details), *args)
+
+
+def _log_token_timing(token, context):
+    """Log token age and seconds remaining, never the token itself."""
+    claims = _jwt_claims(token) if token else None
+    if not claims or not claims.get("exp"):
+        return
+    now = datetime.now(timezone.utc).timestamp()
+    issued = claims.get("iat", claims["exp"])
+    _LOGGER.debug(
+        "MyEdenred %s: token age=%ss remaining=%ss",
+        context,
+        int(now - issued),
+        int(claims["exp"] - now),
+    )
+
+
+def _token_like_fields(*payloads):
+    """Return token-like keys present in payloads, keys only, no values."""
+    found = []
+    for payload in payloads:
+        if isinstance(payload, dict):
+            found.extend(name for name in TOKEN_FIELD_NAMES if name in payload)
+    return sorted(set(found))
+
+
+def _log_response_diagnostics(res, json_body=None, had_authorization=False):
+    """Log response shape only: status, content type, header/field presence."""
+    _LOGGER.debug(
+        "MyEdenred response: status=%s content_type=%s set_cookie=%s"
+        " authorization_sent=%s token_fields=%s",
+        res.status,
+        res.content_type,
+        bool(res.cookies),
+        had_authorization,
+        _token_like_fields(json_body, _data_payload(json_body)) if json_body is not None else [],
+    )
 
 
 class MY_EDENRED:
@@ -91,9 +153,10 @@ class MY_EDENRED:
             headers["Cookie"] = cookie_header
         return headers
 
-    async def _request_json(self, method, url, **kwargs):
+    async def _request_json(self, method, url, token=None, **kwargs):
         """Issue a request and return the JSON body."""
         async with self.websession.request(method, url, **kwargs) as res:
+            set_cookie = bool(res.cookies)
             if res.cookies:
                 self.cookies.update(
                     {
@@ -102,14 +165,21 @@ class MY_EDENRED:
                     }
                 )
             if res.content_type != "application/json":
+                _log_response_diagnostics(res, had_authorization=bool(token))
                 raise MyEdenredError("Unexpected response from MyEdenred API")
             try:
                 json = await res.json()
             except (jsonlib.JSONDecodeError, UnicodeDecodeError) as err:
+                _log_response_diagnostics(res, had_authorization=bool(token))
                 raise MyEdenredError("Invalid JSON response from MyEdenred API") from err
+            _log_response_diagnostics(
+                res, json_body=json, had_authorization=bool(token)
+            )
             if res.status == 200:
                 return json
             if res.status == 401:
+                _log_token_timing(token, "401 received")
+                _LOGGER.debug("MyEdenred 401: set_cookie=%s", set_cookie)
                 # The API may signal a required 2FA challenge in the 401 body.
                 if _challenge_id_from(json.get("data") if isinstance(json, dict) else None):
                     raise MyEdenredChallengeRequired(json.get("data"))
@@ -179,9 +249,11 @@ class MY_EDENRED:
         """Issue CARDS requests."""
         try:
             _LOGGER.debug("Getting list of available cards...")
+            _log_token_timing(token, "getCards")
             json = await self._request_json(
                 "GET",
                 API_LIST_URL,
+                token=token,
                 params=API_COMMON_PARAMS,
                 headers=self._headers(token),
             )
@@ -195,9 +267,11 @@ class MY_EDENRED:
         """Issue ACCOUNT MOVEMENT requests."""
         try:
             _LOGGER.debug("Getting card details and their movements...")
+            _log_token_timing(token, "getAccountDetails")
             json = await self._request_json(
                 "GET",
                 API_ACCOUNTMOVEMENT_URL.format(cardId),
+                token=token,
                 params=API_COMMON_PARAMS,
                 headers=self._headers(token),
             )
