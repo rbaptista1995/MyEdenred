@@ -9,6 +9,7 @@ from .account import Account
 from .card import Card
 from .consts import (
     API_COMMON_PARAMS,
+    API_LOGIN_CHALLENGE_RESEND_URL,
     API_LOGIN_CHALLENGE_URL,
     API_LOGIN_URL,
     API_LIST_URL,
@@ -241,6 +242,31 @@ class MY_EDENRED:
                 _log_token_expiry(data["token"])
                 return data
             raise MyEdenredAuthError("Could not retrieve token after 2FA challenge")
+        except aiohttp.ClientError as err:
+            _LOGGER.error(err)
+            raise MyEdenredError(err) from err
+
+    async def resend_challenge(self, challenge):
+        """Ask MyEdenred to email a fresh 2FA code for the active challenge."""
+        try:
+            challenge_id = challenge.get("authenticationMfaProcessId")
+            if not challenge_id:
+                challenge_id = challenge.get("challengeId")
+
+            _LOGGER.debug("Requesting a new 2FA code...")
+            json = await self._request_json(
+                "POST",
+                API_LOGIN_CHALLENGE_RESEND_URL,
+                params=API_COMMON_PARAMS,
+                headers=self._headers(),
+                json={"authenticationMfaProcessId": challenge_id},
+            )
+            data = _data_payload(json)
+            data["cookies"] = self.cookies
+            if _challenge_id_from(data):
+                _LOGGER.debug("Done requesting a new 2FA code.")
+                raise MyEdenredChallengeRequired(data)
+            raise MyEdenredError("MyEdenred did not return a new 2FA challenge")
         except aiohttp.ClientError as err:
             _LOGGER.error(err)
             raise MyEdenredError(err) from err

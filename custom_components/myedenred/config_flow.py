@@ -32,8 +32,14 @@ DATA_SCHEMA = vol.Schema(
     }
 )
 
-CHALLENGE_SCHEMA = vol.Schema({vol.Required("code"): str})
+CHALLENGE_SCHEMA = vol.Schema(
+    {
+        vol.Required("code"): str,
+        vol.Optional("resend_code", default=False): bool,
+    }
+)
 REAUTH_SCHEMA = vol.Schema({})
+REAUTH_CREDENTIALS_SCHEMA = vol.Schema({vol.Required("password"): str})
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -84,6 +90,29 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             session = async_get_clientsession(self.hass, True)
             api = MY_EDENRED(session, self._pending_challenge.get("cookies"))
+
+            if user_input.get("resend_code"):
+                try:
+                    async with async_timeout.timeout(AUTH_TIMEOUT_SECONDS):
+                        await api.resend_challenge(self._pending_challenge)
+                except MyEdenredChallengeRequired as err:
+                    # A fresh challenge carries the new code sent by email.
+                    self._pending_challenge = err.challenge
+                except MyEdenredAuthError as err:
+                    _LOGGER.error("MyEdenred could not resend the 2FA code: %s", err)
+                    errors = {"base": "resend_failed"}
+                except asyncio.TimeoutError:
+                    _LOGGER.error("MyEdenred 2FA resend timed out")
+                    errors = {"base": "timeout"}
+                except (aiohttp.ClientError, MyEdenredError) as err:
+                    _LOGGER.error("MyEdenred 2FA resend failed: %s", err)
+                    errors = {"base": "network"}
+                return self.async_show_form(
+                    step_id="challenge",
+                    data_schema=CHALLENGE_SCHEMA,
+                    errors=errors,
+                )
+
             result = None
             try:
                 async with async_timeout.timeout(AUTH_TIMEOUT_SECONDS):
@@ -161,6 +190,41 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=REAUTH_SCHEMA,
         )
 
+    async def async_step_reauth_credentials(self, user_input=None):
+        """Collect a new password when the stored one is rejected."""
+        errors = {}
+
+        if user_input is not None:
+            self._pending_user_input["password"] = user_input["password"]
+            result = await self._authenticate(
+                self._pending_user_input,
+                cookies=self._reauth_entry.data.get("cookies"),
+            )
+            if isinstance(result, dict) and result.get("token"):
+                data = {
+                    **self._reauth_entry.data,
+                    **self._pending_user_input,
+                    "token": result["token"],
+                    "cookies": result.get("cookies", {}),
+                }
+                self.hass.config_entries.async_update_entry(
+                    self._reauth_entry, data=data
+                )
+                await self.hass.config_entries.async_reload(
+                    self._reauth_entry.entry_id
+                )
+                return self.async_abort(reason="reauth_successful")
+            if isinstance(result, MyEdenredChallengeRequired):
+                self._pending_challenge = result.challenge
+                return await self.async_step_challenge()
+            errors = {"base": result if result == "auth" else "reauth_failed"}
+
+        return self.async_show_form(
+            step_id="reauth_credentials",
+            data_schema=REAUTH_CREDENTIALS_SCHEMA,
+            errors=errors,
+        )
+
     async def _start_reauth(self, entry_data):
         """Use saved credentials once and continue directly to the 2FA code."""
         result = await self._authenticate(
@@ -179,6 +243,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if isinstance(result, MyEdenredChallengeRequired):
             self._pending_challenge = result.challenge
             return await self.async_step_challenge()
+        if result == "auth":
+            # The stored password is stale: ask for a new one instead of
+            # looping forever on reauth_confirm.
+            return await self.async_step_reauth_credentials()
         error = result if result in ("timeout", "network") else "reauth_failed"
         return self.async_show_form(
             step_id="reauth_confirm",

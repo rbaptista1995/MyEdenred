@@ -58,10 +58,39 @@ class FakeHass:
         self.session = session
 
 
+class FakeConfigEntries:
+    def __init__(self, entry):
+        self._entry = entry
+
+    def async_get_entry(self, entry_id):
+        return self._entry
+
+
+class FakeEntry:
+    def __init__(self, data):
+        self.entry_id = "entry-1"
+        self.data = data
+
+
 def make_flow(handler):
     flow = config_flow.ConfigFlow()
     flow.hass = FakeHass(FakeSession(handler))
     return flow
+
+
+def make_reauth_flow(handler, data=None):
+    flow = make_flow(handler)
+    entry = FakeEntry(
+        data
+        or {
+            "username": "user@example.com",
+            "password": "old",
+            "includeTransactions": False,
+        }
+    )
+    flow.hass.config_entries = FakeConfigEntries(entry)
+    flow.context = {"entry_id": entry.entry_id}
+    return flow, entry
 
 
 def user_input():
@@ -123,3 +152,47 @@ def test_invalid_challenge_code_shows_invalid_code():
     result = asyncio.run(flow.async_step_challenge({"code": "000000"}))
     assert result["step_id"] == "challenge"
     assert result["errors"] == {"base": "invalid_code"}
+
+
+def test_resend_code_requests_a_new_challenge():
+    calls = []
+
+    def handler(method, url, kwargs):
+        calls.append(url)
+        if "resend" in url:
+            return FakeResponse(
+                200, {"data": {"authenticationMfaProcessId": "challenge-2"}}
+            )
+        return FakeResponse(*CHALLENGE)
+
+    flow = make_flow(handler)
+    asyncio.run(flow.async_step_user(user_input()))
+    result = asyncio.run(
+        flow.async_step_challenge({"code": "", "resend_code": True})
+    )
+    assert result["step_id"] == "challenge"
+    assert result["errors"] == {}
+    assert flow._pending_challenge["authenticationMfaProcessId"] == "challenge-2"
+    assert any("resend" in url for url in calls)
+
+
+def test_reauth_with_rejected_password_asks_for_a_new_one():
+    def handler(method, url, kwargs):
+        if kwargs.get("json", {}).get("password") == "old":
+            return FakeResponse(401, {"message": "Invalid credentials", "data": {}})
+        return FakeResponse(*CHALLENGE)
+
+    flow, _ = make_reauth_flow(handler)
+    result = asyncio.run(
+        flow.async_step_reauth(
+            {
+                "username": "user@example.com",
+                "password": "old",
+                "includeTransactions": False,
+            }
+        )
+    )
+    assert result["step_id"] == "reauth_credentials"
+
+    result = asyncio.run(flow.async_step_reauth_credentials({"password": "new"}))
+    assert result["step_id"] == "challenge"

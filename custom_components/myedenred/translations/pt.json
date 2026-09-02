@@ -20,18 +20,24 @@
                 "title": "Codigo de verificacao por email",
                 "description": "Introduza o codigo enviado pelo MyEdenred para o seu email.",
                 "data": {
-                    "code": "Codigo"
+                    "code": "Codigo",
+                    "resend_code": "Reenviar o codigo por email"
                 }
             },
             "reauth_confirm": {
                 "title": "Pedir novo codigo de verificacao",
                 "description": "Nao foi possivel iniciar automaticamente a verificacao por email. Submeta para voltar a tentar com as credenciais guardadas."
+            },
+            "reauth_credentials": {
+                "title": "Atualizar a palavra passe",
+                "description": "O MyEdenred rejeitou a palavra passe guardada. Introduza a palavra passe atual para continuar."
             }
         },
         "error": {
             "auth": "Credenciais inválidas ao aceder ao portal MyEdenred.",
             "invalid_code": "Codigo de verificacao invalido ou expirado.",
             "reauth_failed": "Nao foi possivel pedir um novo codigo de verificacao MyEdenred. Submeta para voltar a tentar.",
+            "resend_failed": "Nao foi possivel reenviar o codigo de verificacao. Tente mais tarde.",
             "timeout": "O pedido ao portal MyEdenred excedeu o tempo de espera. Tente novamente.",
             "network": "Nao foi possivel contactar o portal MyEdenred. Verifique a ligacao e tente novamente."
         },

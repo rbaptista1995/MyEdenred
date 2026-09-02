@@ -20,18 +20,24 @@
                 "title": "Email verification code",
                 "description": "Enter the code sent by MyEdenred to your email.",
                 "data": {
-                    "code": "Code"
+                    "code": "Code",
+                    "resend_code": "Resend the code by email"
                 }
             },
             "reauth_confirm": {
                 "title": "Request a new verification code",
                 "description": "MyEdenred could not start email verification automatically. Submit to retry using the saved login."
+            },
+            "reauth_credentials": {
+                "title": "Update your password",
+                "description": "MyEdenred rejected the saved password. Type the current password to continue."
             }
         },
         "error": {
             "auth": "Invalid credentials accessing the MyEdenred portal.",
             "invalid_code": "Invalid or expired verification code.",
             "reauth_failed": "Could not request a new MyEdenred verification code. Submit to retry.",
+            "resend_failed": "Could not resend the verification code. Try again later.",
             "timeout": "The request to MyEdenred timed out. Please try again.",
             "network": "Could not reach the MyEdenred portal. Check your connection and try again."
         },
