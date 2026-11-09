@@ -17,6 +17,7 @@ Unofficial [MyEdenred Portugal](https://www.myedenred.pt/) integration for Home 
 ## Features
 
 - Balance and transaction sensors for each MyEdenred card
+- Readable sub-entities per card: last transaction (merchant, town, amount), spent this month, last top-up, card status, and a transaction event for automations
 - Config-flow UI setup (username, password and 2FA code received by e-mail)
 - Multiple cards supported — add the integration once per card
 - Portuguese (PT) country targeting
@@ -54,6 +55,42 @@ directly in HACS without adding a custom repository.
 4. Enter the 2FA code received by e-mail
 5. Repeat the procedure for each additional card you own
 
+## Entities
+
+Each card is a device with these entities:
+
+| Entity | What it shows |
+|---|---|
+| `sensor.edenred_card_<number>` | Balance. Unchanged: same name, id and attributes (`ownerName`, `cardStatus`, `cardNumber`, `transactions`) as before, so existing dashboards and automations keep working. |
+| Card status *(diagnostic)* | `active`, … as reported by MyEdenred |
+| Last transaction | Amount of the latest transaction (negative for purchases), with `date`, `kind` (`purchase`, `top_up`, `refund`, `other`), `merchant`, `location` and `description` attributes |
+| Last transaction time | When it happened (timestamp) |
+| Spent this month | Purchases minus refunds in the current month |
+| Last top-up | Amount of the latest top-up, with its `date` |
+| Transaction *(event)* | Fires `purchase` / `top_up` / `refund` / `other` once for every new transaction, with the same attributes. Shows up in the logbook and can trigger automations. Transactions already listed when Home Assistant starts are not replayed. |
+
+The transaction entities are only created when *Include the transaction list* was
+ticked during setup.
+
+Example automation, a notification for every top-up:
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: event.edenred_card_1234_transaction
+    not_from: unavailable
+conditions:
+  - condition: state
+    entity_id: event.edenred_card_1234_transaction
+    attribute: event_type
+    state: top_up
+actions:
+  - action: notify.notify
+    data:
+      message: >-
+        Edenred top-up: {{ state_attr(trigger.entity_id, 'amount') }} €
+```
+
 ## Cards
 
 Add any entity card as usual.
@@ -62,6 +99,25 @@ Add any entity card as usual.
 
 While showing the card's balance on a card is commonplace (any entity card
 will do), displaying transactions can be more complicated to achieve.
+
+#### Using the built-in Markdown card
+
+No custom card needed. Replace the entity id with yours:
+
+```yaml
+type: markdown
+content: |
+  | Date | Where | € |
+  |:--|:--|--:|
+  {% for t in (state_attr('sensor.edenred_card_XXXXXXX', 'transactions') or [])[:10] -%}
+  {%- set d = as_datetime(t.date) -%}
+  {%- if t.name.startswith('Compra') -%}
+  {%- set body = t.name.split(':', 1)[1][1:] -%}
+  {%- set where = (body[:20] | trim | title) ~ ' · ' ~ (body[20:] | trim | regex_replace('^\\d{4}-\\d{3}\\s*', '') | title) -%}
+  {%- else -%}{%- set where = '💰 ' ~ t.name -%}{%- endif -%}
+  | {{ as_local(d).strftime('%d/%m %H:%M') if d else t.date[:10] }} | {{ where }} | {{ '%+.2f' | format(t.amount) }} |
+  {% endfor %}
+```
 
 #### Using a custom:html-template-card
 

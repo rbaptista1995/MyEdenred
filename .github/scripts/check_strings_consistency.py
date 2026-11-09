@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path("custom_components/myedenred")
-ALLOWED_TOP_LEVEL = {"title", "config", "options"}
+ALLOWED_TOP_LEVEL = {"title", "config", "options", "entity"}
 
 failures = []
 

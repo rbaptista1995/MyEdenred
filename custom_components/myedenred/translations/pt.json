@@ -46,5 +46,29 @@
             "already_configured": "Esta integracao ja existe",
             "reauth_successful": "A autenticacao MyEdenred foi renovada com sucesso."
         }
+    },
+    "entity": {
+        "sensor": {
+            "card_status": {"name": "Estado do cartão"},
+            "last_transaction": {"name": "Última transação"},
+            "last_transaction_time": {"name": "Hora da última transação"},
+            "spent_this_month": {"name": "Gasto este mês"},
+            "last_top_up": {"name": "Último carregamento"}
+        },
+        "event": {
+            "transaction": {
+                "name": "Transação",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "purchase": "Compra",
+                            "top_up": "Carregamento",
+                            "refund": "Reembolso",
+                            "other": "Outro"
+                        }
+                    }
+                }
+            }
+        }
     }
 }

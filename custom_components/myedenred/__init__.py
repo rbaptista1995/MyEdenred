@@ -18,7 +18,7 @@ __version__ = json.loads(Path(__file__).with_name("manifest.json").read_text(enc
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
 
-PLATFORMS: list[str] = ["sensor"]
+PLATFORMS: list[str] = ["sensor", "event"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):

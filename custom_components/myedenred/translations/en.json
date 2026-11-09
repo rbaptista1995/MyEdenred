@@ -46,5 +46,29 @@
             "already_configured": "Integration is already configured",
             "reauth_successful": "MyEdenred authentication was renewed successfully."
         }
+    },
+    "entity": {
+        "sensor": {
+            "card_status": {"name": "Card status"},
+            "last_transaction": {"name": "Last transaction"},
+            "last_transaction_time": {"name": "Last transaction time"},
+            "spent_this_month": {"name": "Spent this month"},
+            "last_top_up": {"name": "Last top-up"}
+        },
+        "event": {
+            "transaction": {
+                "name": "Transaction",
+                "state_attributes": {
+                    "event_type": {
+                        "state": {
+                            "purchase": "Purchase",
+                            "top_up": "Top-up",
+                            "refund": "Refund",
+                            "other": "Other"
+                        }
+                    }
+                }
+            }
+        }
     }
 }
